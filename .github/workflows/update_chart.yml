@@ -1,0 +1,32 @@
+name: Update Blood Pressure Chart
+
+on:
+  schedule:
+    # Uruchamiaj codziennie o 08:00 UTC (9:00 czasu polskiego zimą)
+    - cron: '0 8 * * *'
+  workflow_dispatch: # Pozwala na ręczne uruchomienie przyciskiem w GitHubie
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run plot script
+      env:
+        GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+        SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+        CHART_FILE_ID: ${{ secrets.CHART_FILE_ID }}
+      run: python pressure_plot_google_api.py
